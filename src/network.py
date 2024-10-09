@@ -158,7 +158,6 @@ class Network():
             training_data = training_data.to_numpy()
 
         for epoch in range(epochs):
-            print(f'Epoch {epoch}')  # NOTE: for debugging purposes
             np.random.shuffle(training_data)
             total_training_examples = training_data.shape[0]
             batches = total_training_examples // mini_batch_size
@@ -168,7 +167,6 @@ class Network():
                 gradient_weights_average = [None] + [np.zeros((self.sizes[i + 1], self.sizes[i])) for i in range(self.num_layers - 1)]
 
                 for i in range(batch * mini_batch_size, (batch + 1) * mini_batch_size):
-                    print(f'Input {i}')  # NOTE: for debugging purposes
                     input = np.array(training_data[i][1:])  # position [i][0] is label
                     input = input[..., None]  # transforming 1D array into (n, 1) ndarray
 
@@ -192,7 +190,6 @@ class Network():
                 gradient_weights_average = [None] + [np.zeros((self.sizes[i + 1], self.sizes[i])) for i in range(self.num_layers - 1)]
 
                 for i in range(batches * mini_batch_size, total_training_examples):
-                    print(f'Input {i}')  # NOTE: for debugging purposes
                     input = np.array(training_data[i][1:])  # position 0 is label
                     input = input[..., None]  # transforming 1D array into (n, 1) ndarray
 
