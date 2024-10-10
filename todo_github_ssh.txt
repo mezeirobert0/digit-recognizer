@@ -1,7 +1,0 @@
-copy /home/robert/.ssh/config file to repo (if port 22 may be occupied and thus cause git clone via ssh to hang)
-git config --global user.name "mezeirobert0"
-git config --global user.email "antoniu.mezei@stud.ubbcluj.ro"
-ssh-keygen -t ed25519 -C "antoniu.mezei@stud.ubbcluj.ro"
-eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/id_ed25519
-add ssh public key to github

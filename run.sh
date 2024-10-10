@@ -1,14 +1,14 @@
 #!/usr/bin/bash
 
-# TODO: add github ssh key entry to ~/.ssh/known_hosts
 unzip datasets.zip -d ./datasets
 python -m venv ./src/.venv
 source ./src/.venv/bin/activate
-pip install -r requirements.txt
+pip install numpy pandas 
 cd ./src
-python Network.py
+python Network.py > ../python_output
 cd ..
 deactivate
 git add .
-git commit -m "Train neural network on MNIST dataset, with the new weights and biases being added in a folder"
+git commit -m "Train neural network on MNIST dataset, new weights and biases added to a folder, remove some files"
 git push -u origin main
+screen -X -S "training_model" quit
