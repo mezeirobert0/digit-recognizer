@@ -1,5 +1,6 @@
 #!/usr/bin/bash
 
+# TODO: add github ssh key entry to ~/.ssh/known_hosts
 unzip datasets.zip -d ./datasets
 python -m venv ./src/.venv
 source ./src/.venv/bin/activate
