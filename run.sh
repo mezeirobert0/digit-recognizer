@@ -5,10 +5,10 @@ python -m venv ./src/.venv
 source ./src/.venv/bin/activate
 pip install numpy pandas 
 cd ./src
-python Network.py > ../python_output
+python network.py > ../python_output
 cd ..
 deactivate
 git add .
 git commit -m "Train neural network on MNIST dataset, new weights and biases added to a folder, remove some files"
 git push -u origin main
-# screen -X -S "training_model" quit
+screen -X -S "training_model" quit
