@@ -42,6 +42,7 @@ class Network():
             x = sigmoid(np.dot(self.weights[i], x) + self.biases[i])
         return x
 
+    # TODO: write tests for this function
     def get_result(self, output):
         """
         Returns the digit corresponding to the output of the network
@@ -55,6 +56,7 @@ class Network():
                 result = i
         return result
 
+    # TODO: write tests for this function
     def get_expected_output(self, expected_result):
         """
         Returns the vector corresponding to the expected output of the network
@@ -86,6 +88,7 @@ class Network():
                 total_correct += 1
         print(f'{total_correct}/{total}')
 
+    # TODO: refactor code in this function
     def backprop(self, input, y):
         """
         Backpropagation function.
@@ -139,9 +142,9 @@ class Network():
             biases = pd.DataFrame(self.biases[i])
             biases.to_csv(f'{path}/biases[{i}].csv', encoding='utf-8', index=False, header=False)
             weights = pd.DataFrame(self.weights[i])
-            # weights.index = [f'weights[{i}][{j}]' for j in range(self.sizes[i])]
             weights.to_csv(f'{path}/weights[{i}].csv', encoding='utf-8', index=False, header=False)
 
+    # TODO: refactor code in this function
     def SDG(self, mini_batch_size, epochs, learning_rate, training_data=None):
         """
         Stochastic Gradient Descent
