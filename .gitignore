@@ -1,5 +1,8 @@
 # The datasets
-datasets/
+data/datasets/
+
+# Language server settings
+setup.cfg
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
