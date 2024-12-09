@@ -1,0 +1,2 @@
+class ConvolutionalNetwork:
+    pass

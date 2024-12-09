@@ -1,14 +1,17 @@
-import network
+import fully_connected_network
 
 
 class Service:
     def __init__(self):
-        self.network = network.Network([784, 64, 10], "../data/weights_biases/")
+        self.network = fully_connected_network.FullyConnectedNetwork([784, 64, 10], "../data/weights_biases/")
 
-    def get_prediction(self, input_vector):
+    def get_prediction_confidence(self, input_vector):
         """
-        Get prediction
+        Get prediction and accuracy
         :param input_vector: np.ndarray of shape (n, 1), normalized
-        :returns: int
+        :returns: int, float
         """
-        return int(self.get_result(self.feedforward(input_vector)))
+        output = self.network.feedforward(input_vector)
+        predicted_result = int(self.network.get_result(output))
+        confidence = output[predicted_result]
+        return predicted_result, confidence
