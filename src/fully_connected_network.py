@@ -182,6 +182,20 @@ class FullyConnectedNetwork:
                     self.biases[i] -= (learning_rate / (total_training_examples % mini_batch_size)) * gradient_biases_sum[i]
                     self.weights[i] -= (learning_rate / (total_training_examples % mini_batch_size)) * gradient_weights_sum[i]
 
+            total_cost = 0
+            for i in range(total_training_examples):
+                input_vector = training_data[i][1:] / 255  # normalize input
+                input_vector = input_vector[..., None]  # reshape to (n, 1)
+                y_label = utils.one_hot_encode(training_data[i][0], self.sizes[-1])
+
+                # Get predictions and calculate cost
+                predictions = self.feedforward(input_vector)
+                total_cost += utils.cross_entropy_cost(predictions, y_label)
+
+            # Average cost across all examples
+            average_cost = total_cost / total_training_examples
+            print(f"Epoch {epoch}: Cost = {average_cost:.4f}")
+
             # test the network in each epoch
             print(f"Epoch {epoch}: ", end="")
             self.test_network()

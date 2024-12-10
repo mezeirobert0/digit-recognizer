@@ -39,7 +39,7 @@ class MplCanvas(QWidget):
 
     def plot_image(self, vector):
         self.figure.clear()
-        ax = self.figure.add_subplot(111)
+        ax = self.figure.add_subplot()
         ax.imshow(vector.T, interpolation='nearest', cmap='gray', origin='upper')
         ax.axis('off')
         self.canvas.draw()
@@ -48,7 +48,6 @@ class PainterWidget(QWidget):
     """A widget where user can draw with their mouse
 
     The user draws on a QPixmap which is itself paint from paintEvent()
-
     """
 
     def __init__(self, parent=None):
@@ -148,9 +147,9 @@ class PainterWidget(QWidget):
 
         input_vector = input_vector.reshape(784, 1)
 
-        self.plot_widget = MplCanvas()
-        self.plot_widget.plot_image((input_vector * 255).reshape(28, 28))
-        self.plot_widget.show()
+        # self.plot_widget = MplCanvas()
+        # self.plot_widget.plot_image((input_vector * 255).reshape(28, 28))
+        # self.plot_widget.show()
 
         return service.get_prediction_confidence(input_vector)
 
@@ -162,7 +161,7 @@ class PainterWidget(QWidget):
 
 
 class MainWindow(QMainWindow):
-    """An Application example to draw using a pen """
+    """An Application to draw using a pen """
 
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
@@ -170,10 +169,10 @@ class MainWindow(QMainWindow):
         self.root = QWidget()
         self.service = Service()
 
-        self.prediction = QLineEdit("7")
+        self.prediction = QLineEdit(" ")
         self.prediction.setReadOnly(True)
         self.prediction.setAlignment(Qt.AlignCenter)
-        self.confidence = QLineEdit("97 %")
+        self.confidence = QLineEdit(" ")
         self.confidence.setReadOnly(True)
         self.confidence.setAlignment(Qt.AlignCenter)
 
@@ -200,12 +199,12 @@ class MainWindow(QMainWindow):
         self.bar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
         self._verify_action = self.bar.addAction(
-            qApp.style().standardIcon(QStyle.SP_DialogSaveButton),  # noqa: F821
+            qApp.style().standardIcon(QStyle.SP_DialogSaveButton),
             "Verify", self.on_verify
         )
 
         self.bar.addAction(
-            qApp.style().standardIcon(QStyle.SP_DialogResetButton),  # noqa: F821
+            qApp.style().standardIcon(QStyle.SP_DialogResetButton),
             "Clear",
             self.painter_widget.clear,
         )
@@ -216,12 +215,13 @@ class MainWindow(QMainWindow):
     @Slot()
     def on_verify(self):
         prediction, confidence = self.painter_widget.verify()
+        confidence = round(confidence, 3)
         self.prediction.setText(str(prediction))
-        self.confidence.setText(str(confidence))
+        self.confidence.setText(str(confidence) + ' %')
 
 
 if __name__ == "__main__":
-
+    
     app = QApplication(sys.argv)
 
     w = MainWindow()

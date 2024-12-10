@@ -13,5 +13,5 @@ class Service:
         """
         output = self.network.feedforward(input_vector)
         predicted_result = int(self.network.get_result(output))
-        confidence = output[predicted_result]
+        confidence = output[predicted_result][0]
         return predicted_result, confidence
