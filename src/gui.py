@@ -1,48 +1,45 @@
-from PySide6.QtWidgets import (
-    QWidget,
-    QMainWindow,
-    QApplication,
-    QStyle,
-    QLabel,
-    QHBoxLayout,
-    QVBoxLayout,
-    QGridLayout,
-    QLineEdit
-)
-from PySide6.QtCore import Qt, Slot
-from PySide6.QtGui import (
-    QMouseEvent,
-    QPaintEvent,
-    QPen,
-    QImage,
-    QPainter,
-    QPixmap,
-)
-import numpy as np
 import sys
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
+
+import numpy as np
+from PySide6.QtCore import Qt, Slot
+from PySide6.QtGui import QImage, QMouseEvent, QPainter, QPaintEvent, QPen, QPixmap
+from PySide6.QtWidgets import (
+    QApplication,
+    QGridLayout,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QStyle,
+    QWidget,
+)
 
 from service import Service
 
+# from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+# from matplotlib.figure import Figure
+
+
 service = Service()
 
-class MplCanvas(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.figure = Figure()
-        self.canvas = FigureCanvas(self.figure)
 
-        layout = QVBoxLayout()
-        layout.addWidget(self.canvas)
-        self.setLayout(layout)
+# class MplCanvas(QWidget):
+#     def __init__(self, parent=None):
+#         super().__init__(parent)
+#         self.figure = Figure()
+#         self.canvas = FigureCanvas(self.figure)
 
-    def plot_image(self, vector):
-        self.figure.clear()
-        ax = self.figure.add_subplot()
-        ax.imshow(vector.T, interpolation='nearest', cmap='gray', origin='upper')
-        ax.axis('off')
-        self.canvas.draw()
+#         layout = QVBoxLayout()
+#         layout.addWidget(self.canvas)
+#         self.setLayout(layout)
+
+#     def plot_image(self, vector):
+#         self.figure.clear()
+#         ax = self.figure.add_subplot()
+#         ax.imshow(vector.T, interpolation="nearest", cmap="gray", origin="upper")
+#         ax.axis("off")
+#         self.canvas.draw()
+
 
 class PainterWidget(QWidget):
     """A widget where user can draw with their mouse
@@ -54,7 +51,7 @@ class PainterWidget(QWidget):
         super().__init__(parent)
 
         self.setFixedSize(512, 512)
-        self.pixmap = QPixmap(self.size())  
+        self.pixmap = QPixmap(self.size())
         self.pixmap.fill(Qt.black)
 
         self.previous_pos = None
@@ -96,7 +93,6 @@ class PainterWidget(QWidget):
         """Override method from QWidget
 
         Called when user moves and clicks on the mouse
-
         """
         current_pos = event.position().toPoint()
         self.painter.begin(self.pixmap)
@@ -114,14 +110,17 @@ class PainterWidget(QWidget):
         """Override method from QWidget
 
         Called when user releases the mouse
-
         """
         self.previous_pos = None
         QWidget.mouseReleaseEvent(self, event)
 
     def verify(self):
         # downscale pixmap and convert to image
-        qImage = self.pixmap.scaled(28, 28, mode=Qt.SmoothTransformation).toImage().convertToFormat(QImage.Format_Grayscale8)
+        qImage = (
+            self.pixmap.scaled(28, 28, mode=Qt.SmoothTransformation)
+            .toImage()
+            .convertToFormat(QImage.Format_Grayscale8)
+        )
         # qImage = self.pixmap.scaled(28, 28, mode=Qt.FastTransformation).toImage().convertToFormat(QImage.Format_Grayscale8)
 
         # show newly created image
@@ -140,9 +139,6 @@ class PainterWidget(QWidget):
         for y in range(qImage.height()):
             for x in range(qImage.width()):
                 input_vector[x][y] = qImage.pixel(x, y) & 0xFF
-                # if x == 0:
-                #     print()
-                # print(input_vector[x][y], end=' ')
                 input_vector[x][y] /= 255  # normalize
 
         input_vector = input_vector.reshape(784, 1)
@@ -153,15 +149,14 @@ class PainterWidget(QWidget):
 
         return service.get_prediction_confidence(input_vector)
 
-
     def clear(self):
-        """ Clear the pixmap """
+        """Clear the pixmap"""
         self.pixmap.fill(Qt.black)
         self.update()
 
 
 class MainWindow(QMainWindow):
-    """An Application to draw using a pen """
+    """An Application to draw using a pen"""
 
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
@@ -200,7 +195,8 @@ class MainWindow(QMainWindow):
 
         self._verify_action = self.bar.addAction(
             qApp.style().standardIcon(QStyle.SP_DialogSaveButton),
-            "Verify", self.on_verify
+            "Verify",
+            self.on_verify,
         )
 
         self.bar.addAction(
@@ -217,11 +213,11 @@ class MainWindow(QMainWindow):
         prediction, confidence = self.painter_widget.verify()
         confidence = round(confidence, 3)
         self.prediction.setText(str(prediction))
-        self.confidence.setText(str(confidence) + ' %')
+        self.confidence.setText(str(confidence) + " %")
 
 
 if __name__ == "__main__":
-    
+
     app = QApplication(sys.argv)
 
     w = MainWindow()

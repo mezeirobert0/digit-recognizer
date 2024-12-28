@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 
+# ---------- activations and their derivatives ----------
+
 
 def leaky_ReLU(z, alpha=0.05):
     return np.where(z > 0, z, alpha * z)
@@ -8,11 +10,6 @@ def leaky_ReLU(z, alpha=0.05):
 
 def derivative_leaky_ReLU(z, alpha=0.05):
     return np.where(z > 0, 1, alpha)
-
-
-def softmax(z):
-    exp = np.exp(z)
-    return exp / sum(exp)
 
 
 def ReLU(z):
@@ -40,6 +37,9 @@ def derivative_tanh(z):
     return 1 - np.tanh(z) ** 2
 
 
+# ---------- general utilities ----------
+
+
 def one_hot_encode(y: int, num_classes):
     one_hot_y = np.zeros((num_classes, 1))
     one_hot_y[y][0] = 1
@@ -57,29 +57,65 @@ def get_result(y_pred: np.ndarray):
     return max_element_index
 
 
-
-
 def load_mnist():
     mnist_train_df = pd.read_csv("../data/datasets/mnist_train.csv")
     mnist_test_df = pd.read_csv("../data/datasets/mnist_test.csv")
-    return mnist_train_df.to_numpy(), mnist_test_df.to_numpy()
+    # return mnist_train_df.to_numpy(), mnist_test_df.to_numpy()
+    return np.array(mnist_train_df.to_numpy()), np.array(mnist_test_df.to_numpy())
 
 
-def cross_entropy_cost(y_pred, y_true):
-    """
-    Compute Cross-Entropy Loss.
-    :param y_pred: np.ndarray, shape (m, 1), predicted probabilities (output of softmax)
-    :param y_true: np.ndarray, shape (m, 1), one-hot encoded true labels
-    :returns: float, cross-entropy loss
-    """
-    epsilon = 1e-12  # To avoid log(0)
-    y_pred = np.clip(y_pred, epsilon, 1. - epsilon)
-    return -np.sum(y_true * np.log(y_pred)) / y_true.shape[1]
+def valid_correlation(image: np.ndarray, kernel: np.ndarray):
+    """Valid cross-correlation method, with a stride of 1"""
+    image_height = image.shape[0]
+    image_width = image.shape[1]
+    kernel_height = kernel.shape[0]
+    kernel_width = kernel.shape[1]
+    result = np.zeros((image_height - kernel_height + 1, image_width - kernel_width + 1))
+    for i in range(result.shape[0]):
+        for j in range(result.shape[1]):
+            result[i][j] = np.dot(image[i:i+kernel_height, j:j+kernel_width].flatten(), kernel.flatten())
+
+    return result
 
 
-def mse(y_pred, y_true):
+def full_correlation(image: np.ndarray, kernel: np.ndarray):
+    """full cross-correlation method, with a stride of 1"""
+
+    kernel_height = kernel.shape[0]
+    kernel_width = kernel.shape[1]
+
+    return valid_correlation(np.pad(image, ((kernel_height - 1, kernel_height - 1), (kernel_width - 1, kernel_width - 1))), kernel)
+
+
+def valid_convolution(image: np.ndarray, kernel: np.ndarray):
+    """Valid convolution method, with a stride of 1"""
+
+    return valid_correlation(image, np.flip(kernel))  # kernel needs to be flipped horizontally and vertically for convolution
+
+
+def full_convolution(image: np.ndarray, kernel: np.ndarray):
+    """Full convolution method, with a stride of 1"""
+
+    return full_correlation(image, np.flip(kernel))  # kernel needs to be flipped horizontally and vertically for convolution
+
+
+# ---------- cost functions and their derivatives ----------
+
+
+def mse(y_true, y_pred):
     return np.mean(np.power(y_true - y_pred, 2))
 
 
-def derivative_mse(y_pred, y_true):
-    return 2 / np.size(y_pred) * (y_pred - y_true)
+def derivative_mse(y_true, y_pred):
+    return (2 / np.size(y_pred)) * (y_pred - y_true)
+
+
+def categorical_cross_entropy_loss(y_true: np.ndarray, y_pred: np.ndarray):
+    epsilon = 1e-7  # Avoid numerical instability (NaN) by incorporating a small epsilon value
+    y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
+    return -np.sum(y_true * np.log(y_pred))
+
+
+def derivative_categorical_cross_entropy_loss(y_true: np.ndarray, y_pred: np.ndarray):
+    epsilon = 1e-7  # Avoid numerical instability (NaN) by incorporating a small epsilon value
+    return -y_true / (y_pred + epsilon)

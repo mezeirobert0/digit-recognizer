@@ -16,11 +16,11 @@ class FullyConnectedNetwork:
             # the biases of the 2nd layer are stored in self.biases[1],
             # the biases of the 3rd layer are stored in self.biases[2], etc.
             # all layers but the input layer get biases
-            self.biases = [None] + [np.zeros((size, 1)) for size in sizes[1:]]
+            self.biases = [None] + [np.random.randn(size, 1) for size in sizes[1:]]
             # initializing weights: list of numpy arrays (matrices)
             # self.weights[l][j][k] - weight from the k-th neuron in the l-th layer
             # to the j-th neuron in the (l+1)-th layer
-            self.weights = [None] + [np.random.randn(sizes[i + 1], sizes[i]) * np.sqrt(1 / sizes[i]) for i in range(self.num_layers - 1)]
+            self.weights = [None] + [np.random.randn(sizes[i + 1], sizes[i]) for i in range(self.num_layers - 1)]
 
         else:
             self.biases = [None]
@@ -39,15 +39,14 @@ class FullyConnectedNetwork:
         :returns: np.ndarray of shape (m, 1), where m = self.sizes[-1] (size of output layer)
         """
         x = input_vector.copy()  # call copy constructor
-        for i in range(1, self.num_layers - 1):
-            x = utils.leaky_ReLU(np.dot(self.weights[i], x) + self.biases[i])
-        x = utils.softmax(np.dot(self.weights[-1], x) + self.biases[-1])
+        for i in range(1, self.num_layers):
+            x = utils.sigmoid(np.dot(self.weights[i], x) + self.biases[i])
         return x
 
     def get_result(self, output):
         """
         Returns the digit corresponding to the output of the network
-        :param output: np.ndarray of shape (m, 1), where m = self.sizes[-1] (size of output layer) (real components, should add up to 1)
+        :param output: np.ndarray of shape (m, 1), where m = self.sizes[-1] (size of output layer)
         :returns: int
         """
         result = 0
@@ -55,16 +54,6 @@ class FullyConnectedNetwork:
             if output[i][0] > output[result][0]:
                 result = i
         return result
-
-    def get_expected_output(self, expected_result: int):
-        """
-        Returns the vector corresponding to the expected output of the network
-        :param expected_result: int, between 0 and m - 1
-        :returns: np.ndarray of shape (m, 1), where m = self.sizes[-1] (size of output layer)
-        """
-        expected_output = np.zeros((self.sizes[-1], 1))
-        expected_output[expected_result][0] = 1
-        return expected_output
 
     def test_network(self, testing_data=None):
         """
@@ -96,22 +85,20 @@ class FullyConnectedNetwork:
         # forward propagation
         z = [None]
         a = [input_vector.copy()]
-        for i in range(1, self.num_layers - 1):
+        for i in range(1, self.num_layers):
             z.append(np.dot(self.weights[i], a[-1]) + self.biases[i])
-            a.append(utils.leaky_ReLU(z[-1]))
-        z.append(np.dot(self.weights[-1], a[-1]) + self.biases[-1])
-        a.append(utils.softmax(z[-1]))  # for the last layer apply softmax activation function instead of leaky ReLU
+            a.append(utils.sigmoid(z[-1]))
 
         gradient_biases = [None] * self.num_layers
         gradient_weights = [None] * self.num_layers
 
         # backwards propagation
-        error = (a[-1] - y)  # error in the output layer (derivative of the Mean Squared Error cost function)
+        error = utils.derivative_mse(y, a[-1]) * utils.derivative_sigmoid(z[-1])  # error in the output layer
         gradient_biases[-1] = error.copy()
         gradient_weights[-1] = np.dot(error, a[-2].T)
         for i in range(self.num_layers - 2, 0, -1):
-            error = np.dot(self.weights[i + 1].T, error) * utils.derivative_leaky_ReLU(z[i])  # error in the subsequent layer
-            gradient_biases[i] = np.array(error)
+            error = np.dot(self.weights[i + 1].T, error) * utils.derivative_sigmoid(z[i])  # error in the subsequent layer
+            gradient_biases[i] = error.copy()
             gradient_weights[i] = np.dot(error, a[i - 1].T)
 
         return gradient_biases, gradient_weights
@@ -172,7 +159,7 @@ class FullyConnectedNetwork:
                     input_vector = input_vector[..., None]  # transforming 1D array into (n, 1) ndarray
 
                     y = training_data[i][0]
-                    gradient_biases_current, gradient_weights_current = self.backprop(input_vector, utils.one_hot_encode(y, self.sizes))
+                    gradient_biases_current, gradient_weights_current = self.backprop(input_vector, utils.one_hot_encode(y, self.sizes[-1]))
 
                     for l in range(1, self.num_layers):
                         gradient_biases_sum[l] += gradient_biases_current[l]
@@ -181,20 +168,6 @@ class FullyConnectedNetwork:
                 for i in range(1, self.num_layers):
                     self.biases[i] -= (learning_rate / (total_training_examples % mini_batch_size)) * gradient_biases_sum[i]
                     self.weights[i] -= (learning_rate / (total_training_examples % mini_batch_size)) * gradient_weights_sum[i]
-
-            total_cost = 0
-            for i in range(total_training_examples):
-                input_vector = training_data[i][1:] / 255  # normalize input
-                input_vector = input_vector[..., None]  # reshape to (n, 1)
-                y_label = utils.one_hot_encode(training_data[i][0], self.sizes[-1])
-
-                # Get predictions and calculate cost
-                predictions = self.feedforward(input_vector)
-                total_cost += utils.cross_entropy_cost(predictions, y_label)
-
-            # Average cost across all examples
-            average_cost = total_cost / total_training_examples
-            print(f"Epoch {epoch}: Cost = {average_cost:.4f}")
 
             # test the network in each epoch
             print(f"Epoch {epoch}: ", end="")
@@ -205,9 +178,8 @@ if __name__ == "__main__":
     # train the network
     np.random.seed(0)
     digit_recognizer = FullyConnectedNetwork([784, 64, 10])
-    digit_recognizer.SGD(30, 4, 0.1)
-    digit_recognizer.SGD(20, 2, 0.01)
-    # digit_recognizer.weights_biases_to_csv("../data/weights_biases/")  # write the weights and biases to files
+    digit_recognizer.SGD(20, 10, 0.5)
+    digit_recognizer.weights_biases_to_csv("../data/weights_biases/")  # write the weights and biases to files
 
     # test the network
     # digit_recognizer = Network([784, 32, 10], "../data/weights_biases/")
