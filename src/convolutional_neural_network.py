@@ -182,24 +182,25 @@ def get_lenet_5_pretrained():
         SoftmaxLayer(),
     ])
 
+    # lenet_5_pretrained.test_network_async()
     return lenet_5_pretrained 
     
 if __name__ == '__main__':
-    lenet_5 = ConvolutionalNeuralNetwork([
-        ConvolutionalLayer((1, 32, 32), (6, 28, 28)),   # 0
-        ActivationLayer(tanh, derivative_tanh),
-        AveragePoolingLayer(2),
-        ConvolutionalLayer((6, 14, 14), (16, 10, 10)),  # 3
-        ActivationLayer(tanh, derivative_tanh),
-        AveragePoolingLayer(2),
-        ConvolutionalLayer((16, 5, 5), (120, 1, 1)),    # 6
-        ActivationLayer(tanh, derivative_tanh),
-        ReshapeLayer((120, 1, 1), (120, 1)),
-        DenseLayer(120, 84),                            # 9
-        ActivationLayer(tanh, derivative_tanh),
-        DenseLayer(84, 10),                             # 11
-        SoftmaxLayer(),
-    ])
+    # lenet_5 = ConvolutionalNeuralNetwork([
+    #     ConvolutionalLayer((1, 32, 32), (6, 28, 28)),   # 0
+    #     ActivationLayer(tanh, derivative_tanh),
+    #     AveragePoolingLayer(2),
+    #     ConvolutionalLayer((6, 14, 14), (16, 10, 10)),  # 3
+    #     ActivationLayer(tanh, derivative_tanh),
+    #     AveragePoolingLayer(2),
+    #     ConvolutionalLayer((16, 5, 5), (120, 1, 1)),    # 6
+    #     ActivationLayer(tanh, derivative_tanh),
+    #     ReshapeLayer((120, 1, 1), (120, 1)),
+    #     DenseLayer(120, 84),                            # 9
+    #     ActivationLayer(tanh, derivative_tanh),
+    #     DenseLayer(84, 10),                             # 11
+    #     SoftmaxLayer(),
+    # ])
 
     # lenet_5.fit(epochs=7, mini_batch_size=5, learning_rate=0.01)
     # lenet_5.trainable_parameters_to_csv()

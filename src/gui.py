@@ -117,11 +117,10 @@ class PainterWidget(QWidget):
     def verify(self):
         # downscale pixmap and convert to image
         qImage = (
-            self.pixmap.scaled(28, 28, mode=Qt.SmoothTransformation)
+            self.pixmap.scaled(28, 28, mode=Qt.FastTransformation)
             .toImage()
             .convertToFormat(QImage.Format_Grayscale8)
         )
-        # qImage = self.pixmap.scaled(28, 28, mode=Qt.FastTransformation).toImage().convertToFormat(QImage.Format_Grayscale8)
 
         # show newly created image
         # resized_pixmap = QPixmap(qImage)
@@ -133,18 +132,17 @@ class PainterWidget(QWidget):
         # self.image_widget.setLayout(image_widget_layout)
         # self.image_widget.show()
 
-        input_vector = np.zeros((28, 28))
+        input_array = np.zeros((28, 28))
 
         # create numpy array
         for y in range(qImage.height()):
             for x in range(qImage.width()):
-                input_vector[x, y] = qImage.pixel(x, y) & 0xFF
-                
-        # self.plot_widget = MplCanvas()
-        # self.plot_widget.plot_image((input_vector * 255).reshape(28, 28))
-        # self.plot_widget.show()
+                input_array[y, x] = qImage.pixel(x, y) & 0xFF
+        
+        # np.set_printoptions(linewidth=np.inf)
+        # print(input_array)
 
-        return service.get_prediction_confidence(input_vector)
+        return service.get_prediction_confidence(input_array)
 
     def clear(self):
         """Clear the pixmap"""
