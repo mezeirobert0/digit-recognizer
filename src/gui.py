@@ -138,11 +138,8 @@ class PainterWidget(QWidget):
         # create numpy array
         for y in range(qImage.height()):
             for x in range(qImage.width()):
-                input_vector[x][y] = qImage.pixel(x, y) & 0xFF
-                input_vector[x][y] /= 255  # normalize
-
-        input_vector = input_vector.reshape(784, 1)
-
+                input_vector[x, y] = qImage.pixel(x, y) & 0xFF
+                
         # self.plot_widget = MplCanvas()
         # self.plot_widget.plot_image((input_vector * 255).reshape(28, 28))
         # self.plot_widget.show()

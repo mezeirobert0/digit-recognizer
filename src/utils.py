@@ -99,6 +99,15 @@ def full_convolution(image: np.ndarray, kernel: np.ndarray):
     return full_correlation(image, np.flip(kernel))  # kernel needs to be flipped horizontally and vertically for convolution
 
 
+def step_learning_rate_decay(learning_rate: float, epoch: int, step: int, decay_rate: float):
+    return learning_rate * decay_rate ** ((epoch + 1) // step)
+
+
+def preprocess_mnist_datapoint(datapoint: np.ndarray):
+    processed_datapoint = datapoint / 255
+    return np.pad(processed_datapoint.reshape(28, 28), 2)[None, ...]   # reshape, pad with 2 on each side, add extra dimension
+
+
 # ---------- cost functions and their derivatives ----------
 
 

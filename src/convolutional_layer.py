@@ -41,6 +41,10 @@ class ConvolutionalLayer(Layer):
             for i in range(self.biases.shape[0]):
                 self.biases[i] = pd.read_csv(f"{path}/bias_{i}.csv", encoding="utf-8", header=None).to_numpy()
 
+        self.sum_biases_gradient = None
+        self.sum_kernels_gradient = None
+        self.total_gradients = 0
+
     
     def forward(self, input_array: np.ndarray):
         self.input_array = input_array.copy()
@@ -49,14 +53,18 @@ class ConvolutionalLayer(Layer):
         for i in range(self.output_shape[0]):
             sum_correlations = np.zeros(self.output_shape[1:])
             for j in range(self.input_shape[0]):
-                # sum_correlations += valid_correlation(self.input_array[j], self.kernels[i][j])
-                sum_correlations += correlate2d(self.input_array[j], self.kernels[i][j], 'valid')
+                # sum_correlations += valid_correlation(self.input_array[j], self.kernels[i, j])
+                sum_correlations += correlate2d(self.input_array[j], self.kernels[i, j], 'valid')
             
             self.output_array[i] = sum_correlations + self.biases[i]
 
         return self.output_array.copy()
     
-    def backwards(self, output_gradient: np.ndarray, learning_rate: float):
+    def backwards(self, output_gradient: np.ndarray):
+        if self.total_gradients == 0:
+            self.sum_biases_gradient = np.zeros(self.biases.shape)
+            self.sum_kernels_gradient = np.zeros(self.kernels.shape)
+
         biases_gradient = output_gradient.copy()
         kernels_gradient = np.zeros(self.kernels.shape)
         input_gradient = np.zeros(self.input_shape)
@@ -67,11 +75,20 @@ class ConvolutionalLayer(Layer):
                 kernels_gradient[i, j] = correlate2d(self.input_array[j], output_gradient[i], 'valid')
                 input_gradient[j] += convolve2d(output_gradient[i], self.kernels[i, j], 'full')
 
-        # update kernels and biases
-        self.biases -= learning_rate * biases_gradient
-        self.kernels -= learning_rate * kernels_gradient
+        self.total_gradients += 1
+        self.sum_biases_gradient += biases_gradient
+        self.sum_kernels_gradient += kernels_gradient
 
-        return input_gradient.copy()
+        return input_gradient
+    
+    def update_kernels_biases(self, learning_rate: float):
+        self.biases -= learning_rate / self.total_gradients * self.sum_biases_gradient
+        self.kernels -= learning_rate / self.total_gradients * self.sum_kernels_gradient
+
+        # reset the sum of gradients of kernels and biases
+        self.sum_biases_gradient = None
+        self.sum_kernels_gradient = None
+        self.total_gradients = 0
     
     def kernels_biases_to_csv(self, path: str):
         for i in range(self.kernels.shape[0]):

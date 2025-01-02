@@ -10,5 +10,5 @@ class ActivationLayer(Layer):
         self.input_array = input_array.copy()
         return self.activation(input_array)
 
-    def backwards(self, output_gradient, learning_rate):
+    def backwards(self, output_gradient):
         return output_gradient * self.derivative_activation(self.input_array)

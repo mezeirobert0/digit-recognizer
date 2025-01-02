@@ -8,5 +8,5 @@ class Layer:
     def forward(self, input_array: np.ndarray):
         pass
 
-    def backwards(self, output_gradient: np.ndarray, learning_rate: float):
+    def backwards(self, output_gradient: np.ndarray):
         pass

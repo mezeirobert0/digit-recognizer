@@ -1,17 +1,15 @@
-import fully_connected_network
+from convolutional_neural_network import get_lenet_5_pretrained
+from utils import preprocess_mnist_datapoint
 
 
 class Service:
     def __init__(self):
-        self.network = fully_connected_network.FullyConnectedNetwork([784, 64, 10], "../data/weights_biases/")
-
-    def get_prediction_confidence(self, input_vector):
+        self.lenet_5_pretrained = get_lenet_5_pretrained()
+        
+    def get_prediction_confidence(self, input_array):
         """
         Get prediction and accuracy
-        :param input_vector: np.ndarray of shape (n, 1), normalized
+        :param input_array: np.ndarray of shape (28, 28)
         :returns: int, float
         """
-        output = self.network.feedforward(input_vector)
-        predicted_result = int(self.network.get_result(output))
-        confidence = output[predicted_result][0]
-        return predicted_result, confidence
+        return self.lenet_5_pretrained.get_prediction_confidence(preprocess_mnist_datapoint(input_array))
