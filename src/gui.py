@@ -208,7 +208,7 @@ class MainWindow(QMainWindow):
         prediction, confidence = self.painter_widget.verify()
         confidence = round(confidence, 3)
         self.prediction.setText(str(prediction))
-        self.confidence.setText(str(confidence) + " %")
+        self.confidence.setText(str(round(confidence * 100, 3)) + " %")
 
 
 if __name__ == "__main__":
