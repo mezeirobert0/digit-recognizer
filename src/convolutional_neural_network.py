@@ -69,7 +69,7 @@ class ConvolutionalNeuralNetwork:
     def __init__(self, layers: list[Layer]):
         self.layers = layers
 
-    def fit(self, epochs: int, mini_batch_size: int, learning_rate: float, training_data: np.ndarray = None):
+    def fit(self, epochs: int, mini_batch_size: int, learning_rate: float, step: int, decay_rate: float, training_data: np.ndarray = None):
         if training_data is None:
             training_data = mnist_train.copy()
         total_training = training_data.shape[0]
@@ -87,7 +87,7 @@ class ConvolutionalNeuralNetwork:
                         print(i + 1)
 
                     expected_output_array = one_hot_encode(training_data[i, 0], 10)
-                    output_array = preprocess_mnist_datapoint(training_data[i][1:])
+                    output_array = preprocess_mnist_datapoint(training_data[i, 1:])
 
                     # forward propagation
                     for layer in self.layers:
@@ -115,7 +115,7 @@ class ConvolutionalNeuralNetwork:
             print()
 
             # update learning rate
-            learning_rate = step_learning_rate_decay(learning_rate, epoch, step=1, decay_rate=0.9)
+            learning_rate = step_learning_rate_decay(learning_rate, epoch, step, decay_rate)
 
     def test_network_async(self, testing_data: np.ndarray = None, num_threads: int = 2):
         if testing_data is None:
@@ -136,8 +136,8 @@ class ConvolutionalNeuralNetwork:
     def test_network_batch(self, testing_data: np.ndarray, start: int, end: int):
         total_predicted = 0
         for i in range(start, end):
-            expected_result = testing_data[i][0]
-            output_array = preprocess_mnist_datapoint(testing_data[i][1:])
+            expected_result = testing_data[i, 0]
+            output_array = preprocess_mnist_datapoint(testing_data[i, 1:])
 
             for layer in self.layers:
                 output_array = layer.forward(output_array)
@@ -161,7 +161,7 @@ class ConvolutionalNeuralNetwork:
             output_array = layer.forward(output_array)
 
         prediction = get_result(output_array)
-        confidence = output_array[prediction][0]
+        confidence = output_array[prediction, 0]
 
         return prediction, confidence
     
@@ -202,7 +202,7 @@ if __name__ == '__main__':
     #     SoftmaxLayer(),
     # ])
 
-    # lenet_5.fit(epochs=7, mini_batch_size=5, learning_rate=0.01)
+    # lenet_5.fit(epochs=7, mini_batch_size=5, learning_rate=0.01, step=1, decay_rate=0.9)
     # lenet_5.trainable_parameters_to_csv()
 
     lenet_5_pretrained = ConvolutionalNeuralNetwork([

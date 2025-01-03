@@ -42,16 +42,16 @@ def derivative_tanh(z):
 
 def one_hot_encode(y: int, num_classes):
     one_hot_y = np.zeros((num_classes, 1))
-    one_hot_y[y][0] = 1
+    one_hot_y[y, 0] = 1
     return one_hot_y
 
 
 def get_result(y_pred: np.ndarray):
-    max_element = y_pred[0][0]
+    max_element = y_pred[0, 0]
     max_element_index = 0
     for i in range(1, y_pred.shape[0]):
-        if y_pred[i][0] > max_element:
-            max_element = y_pred[i][0]
+        if y_pred[i, 0] > max_element:
+            max_element = y_pred[i, 0]
             max_element_index = i
 
     return max_element_index
@@ -73,7 +73,7 @@ def valid_correlation(image: np.ndarray, kernel: np.ndarray):
     result = np.zeros((image_height - kernel_height + 1, image_width - kernel_width + 1))
     for i in range(result.shape[0]):
         for j in range(result.shape[1]):
-            result[i][j] = np.dot(image[i:i+kernel_height, j:j+kernel_width].flatten(), kernel.flatten())
+            result[i, j] = np.dot(image[i:i+kernel_height, j:j+kernel_width].flatten(), kernel.flatten())
 
     return result
 
