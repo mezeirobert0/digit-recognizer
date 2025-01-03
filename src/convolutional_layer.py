@@ -44,7 +44,6 @@ class ConvolutionalLayer(Layer):
         self.sum_biases_gradient = None
         self.sum_kernels_gradient = None
         self.total_gradients = 0
-
     
     def forward(self, input_array: np.ndarray):
         self.input_array = input_array.copy()

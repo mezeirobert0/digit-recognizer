@@ -1,7 +1,6 @@
-from concurrent.futures import ThreadPoolExecutor
 from time import time
 import numpy as np
-from pathlib import Path
+from tqdm import tqdm
 from activation_layer import ActivationLayer
 from average_pooling_layer import AveragePoolingLayer
 from convolutional_layer import ConvolutionalLayer
@@ -79,12 +78,9 @@ class ConvolutionalNeuralNetwork:
             np.random.shuffle(training_data)
             error = 0
 
-            start_time = time()
-
-            for batch in range(batches):
+            print(f"Epoch {epoch}")
+            for batch in tqdm(range(batches)):
                 for i in range(batch * mini_batch_size, (batch + 1) * mini_batch_size):
-                    if (i + 1) % 1000 == 0:
-                        print(i + 1)
 
                     expected_output_array = one_hot_encode(training_data[i, 0], 10)
                     output_array = preprocess_mnist_datapoint(training_data[i, 1:])
@@ -108,25 +104,23 @@ class ConvolutionalNeuralNetwork:
 
             error /= total_training
             print(f"Error in training dataset: {error}")
-            print(f'Epoch {epoch}: ', end='')
+            print(f"Accuracy in testing dataset: ", end='')
             self.test_network_async()
-            end_time = time()
-            print(f'Time took for epoch {epoch}: {end_time - start_time} seconds')
             print()
 
             # update learning rate
             learning_rate = step_learning_rate_decay(learning_rate, epoch, step, decay_rate)
 
-    def test_network_async(self, testing_data: np.ndarray = None, num_threads: int = 2):
+    def test_network_async(self, testing_data: np.ndarray = None, num_processes: int = 2):
         if testing_data is None:
             testing_data = mnist_test.copy()
         total_testing = testing_data.shape[0]
 
         # start_time = time()
         total_predicted = 0
-        batch_size = total_testing // num_threads
-        with Pool(num_threads) as pool:
-            results = pool.starmap(self.test_network_batch, [(testing_data, i * batch_size, (i + 1) * batch_size) for i in range(num_threads)])
+        batch_size = total_testing // num_processes
+        with Pool(num_processes) as pool:
+            results = pool.starmap(self.test_network_batch, [(testing_data, i * batch_size, (i + 1) * batch_size) for i in range(num_processes)])
             total_predicted = sum(results)
 
         # end_time = time()
@@ -186,39 +180,44 @@ def get_lenet_5_pretrained():
     return lenet_5_pretrained 
     
 if __name__ == '__main__':
-    # lenet_5 = ConvolutionalNeuralNetwork([
-    #     ConvolutionalLayer((1, 32, 32), (6, 28, 28)),   # 0
-    #     ActivationLayer(tanh, derivative_tanh),
-    #     AveragePoolingLayer(2),
-    #     ConvolutionalLayer((6, 14, 14), (16, 10, 10)),  # 3
-    #     ActivationLayer(tanh, derivative_tanh),
-    #     AveragePoolingLayer(2),
-    #     ConvolutionalLayer((16, 5, 5), (120, 1, 1)),    # 6
-    #     ActivationLayer(tanh, derivative_tanh),
-    #     ReshapeLayer((120, 1, 1), (120, 1)),
-    #     DenseLayer(120, 84),                            # 9
-    #     ActivationLayer(tanh, derivative_tanh),
-    #     DenseLayer(84, 10),                             # 11
-    #     SoftmaxLayer(),
-    # ])
-
-    # lenet_5.fit(epochs=7, mini_batch_size=5, learning_rate=0.01, step=1, decay_rate=0.9)
-    # lenet_5.trainable_parameters_to_csv()
-
-    lenet_5_pretrained = ConvolutionalNeuralNetwork([
-        ConvolutionalLayer((1, 32, 32), (6, 28, 28), '../data/kernels_biases/layer_0'),   # 0
+    lenet_5 = ConvolutionalNeuralNetwork([
+        ConvolutionalLayer((1, 32, 32), (6, 28, 28)),   # 0
         ActivationLayer(tanh, derivative_tanh),
         AveragePoolingLayer(2),
-        ConvolutionalLayer((6, 14, 14), (16, 10, 10), '../data/kernels_biases/layer_3'),  # 3
+        ConvolutionalLayer((6, 14, 14), (16, 10, 10)),  # 3
         ActivationLayer(tanh, derivative_tanh),
         AveragePoolingLayer(2),
-        ConvolutionalLayer((16, 5, 5), (120, 1, 1), '../data/kernels_biases/layer_6'),    # 6
+        ConvolutionalLayer((16, 5, 5), (120, 1, 1)),    # 6
         ActivationLayer(tanh, derivative_tanh),
         ReshapeLayer((120, 1, 1), (120, 1)),
-        DenseLayer(120, 84, '../data/weights_biases/layer_9'),                            # 9
+        DenseLayer(120, 84),                            # 9
         ActivationLayer(tanh, derivative_tanh),
-        DenseLayer(84, 10, '../data/weights_biases/layer_11'),                            # 11
+        DenseLayer(84, 10),                             # 11
         SoftmaxLayer(),
     ])
 
-    lenet_5_pretrained.test_network_async()
+    print('mini_batch_size = 32, learning_rate = 0.1')
+    lenet_5.fit(epochs=6, mini_batch_size=32, learning_rate=0.1, step=1, decay_rate=0.9)
+    
+    write_to_csv = input('Write trained parameters to CSV? (y) ')
+    if write_to_csv == 'y':
+        lenet_5.trainable_parameters_to_csv()
+        print('Wrote trained parameters to CSV')
+
+    # lenet_5_pretrained = ConvolutionalNeuralNetwork([
+    #     ConvolutionalLayer((1, 32, 32), (6, 28, 28), '../data/kernels_biases/layer_0'),   # 0
+    #     ActivationLayer(tanh, derivative_tanh),
+    #     AveragePoolingLayer(2),
+    #     ConvolutionalLayer((6, 14, 14), (16, 10, 10), '../data/kernels_biases/layer_3'),  # 3
+    #     ActivationLayer(tanh, derivative_tanh),
+    #     AveragePoolingLayer(2),
+    #     ConvolutionalLayer((16, 5, 5), (120, 1, 1), '../data/kernels_biases/layer_6'),    # 6
+    #     ActivationLayer(tanh, derivative_tanh),
+    #     ReshapeLayer((120, 1, 1), (120, 1)),
+    #     DenseLayer(120, 84, '../data/weights_biases/layer_9'),                            # 9
+    #     ActivationLayer(tanh, derivative_tanh),
+    #     DenseLayer(84, 10, '../data/weights_biases/layer_11'),                            # 11
+    #     SoftmaxLayer(),
+    # ])
+
+    # lenet_5_pretrained.test_network_async()
