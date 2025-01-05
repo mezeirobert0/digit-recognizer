@@ -1,0 +1,7 @@
+Add more code comments & type annotations
+Add Mnist class & move all MNIST-related methods from utils.py to Mnist class
+Refactor so that fit and test_network methods from CNN class now have separate labels and training data
+Add data standardization:
+divide data by 255 - normalize, then subtract the mean and divide by the standard deviation - standardize
+Add Fan-in initialization as show in Yann LeCunn's paper
+Remove redundant Service instance in gui.py

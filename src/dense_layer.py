@@ -6,8 +6,9 @@ from layer import Layer
 class DenseLayer(Layer):
     def __init__(self, input_size: int, output_size: int, path: str = None):
         if path is None:
-            self.biases = np.random.randn(output_size, 1)
-            self.weights = np.random.randn(output_size, input_size)
+            Fi = input_size  # Fan-in initialization
+            self.weights = np.random.uniform(-2.4/Fi, 2.4/Fi, (output_size, input_size))
+            self.biases = np.ones((output_size, 1)) * 0.01
         
         else:
             self.biases = pd.read_csv(f'{path}/biases.csv', header=None).to_numpy()

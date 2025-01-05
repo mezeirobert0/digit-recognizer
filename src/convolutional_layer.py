@@ -17,13 +17,17 @@ class ConvolutionalLayer(Layer):
         self.output_shape = output_shape
 
         if path is None:
-            self.biases = np.random.randn(*output_shape)  # use * to pass the individual tuple elements instead of the whole tuple
-            self.kernels = np.random.randn(
+            kernels_shape = (
                 output_shape[0],
                 input_shape[0],
                 input_shape[1] - output_shape[1] + 1,
                 input_shape[2] - output_shape[2] + 1
             )
+
+            Fi = input_shape[0] * kernels_shape[2] * kernels_shape[3]  # Fan-in initialization
+            self.kernels = np.random.uniform(-2.4/Fi, 2.4/Fi, kernels_shape)
+            self.biases = np.ones(output_shape) * 0.01
+            
 
         else:
             self.biases = np.zeros(output_shape)

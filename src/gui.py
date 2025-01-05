@@ -157,7 +157,6 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self, parent)
 
         self.root = QWidget()
-        self.service = Service()
 
         self.prediction = QLineEdit(" ")
         self.prediction.setReadOnly(True)
