@@ -13,32 +13,10 @@ from PySide6.QtWidgets import (
     QStyle,
     QWidget,
 )
-
 from service import Service
-
-# from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-# from matplotlib.figure import Figure
 
 
 service = Service()
-
-
-# class MplCanvas(QWidget):
-#     def __init__(self, parent=None):
-#         super().__init__(parent)
-#         self.figure = Figure()
-#         self.canvas = FigureCanvas(self.figure)
-
-#         layout = QVBoxLayout()
-#         layout.addWidget(self.canvas)
-#         self.setLayout(layout)
-
-#     def plot_image(self, vector):
-#         self.figure.clear()
-#         ax = self.figure.add_subplot()
-#         ax.imshow(vector.T, interpolation="nearest", cmap="gray", origin="upper")
-#         ax.axis("off")
-#         self.canvas.draw()
 
 
 class PainterWidget(QWidget):
@@ -117,20 +95,10 @@ class PainterWidget(QWidget):
     def verify(self):
         # downscale pixmap and convert to image
         qImage = (
-            self.pixmap.scaled(28, 28, mode=Qt.FastTransformation)
+            self.pixmap.scaled(28, 28, mode=Qt.SmoothTransformation)
             .toImage()
             .convertToFormat(QImage.Format_Grayscale8)
         )
-
-        # show newly created image
-        # resized_pixmap = QPixmap(qImage)
-        # resized_pixmap_qLabel = QLabel()
-        # resized_pixmap_qLabel.setPixmap(resized_pixmap)
-        # self.image_widget = QWidget()
-        # image_widget_layout = QGridLayout()
-        # image_widget_layout.addWidget(resized_pixmap_qLabel)
-        # self.image_widget.setLayout(image_widget_layout)
-        # self.image_widget.show()
 
         input_array = np.zeros((28, 28))
 
@@ -138,9 +106,6 @@ class PainterWidget(QWidget):
         for y in range(qImage.height()):
             for x in range(qImage.width()):
                 input_array[y, x] = qImage.pixel(x, y) & 0xFF
-        
-        # np.set_printoptions(linewidth=np.inf)
-        # print(input_array)
 
         return service.get_prediction_confidence(input_array)
 

@@ -148,9 +148,9 @@ class ConvolutionalNeuralNetwork:
         """Write kernels, weights and biases to CSV files"""
         for index, layer in enumerate(self.layers):
             if isinstance(layer, ConvolutionalLayer):
-                layer.kernels_biases_to_csv(f'../data/kernels_biases/layer_{index}/')
+                layer.kernels_biases_to_csv(f'../data/kernels_biases_2/layer_{index}/')
             elif isinstance(layer, DenseLayer):
-                layer.weights_biases_to_csv(f'../data/weights_biases/layer_{index}/')
+                layer.weights_biases_to_csv(f'../data/weights_biases_2/layer_{index}/')
 
     def errors_accuracies_to_csv(self):
         """Write the errors and accuracies to CSV"""
@@ -160,7 +160,7 @@ class ConvolutionalNeuralNetwork:
             'train_accuracy':self.train_accuracies,
             'test_accuracy':self.test_accuracies
         })
-        filepath = Path('../data/errors_accuracies.csv')
+        filepath = Path('../data/errors_accuracies_2.csv')
         filepath.parent.mkdir(parents=True, exist_ok=True)
         errors_accuracies_df.to_csv(filepath, encoding='utf-8', index=False)
 
@@ -181,18 +181,18 @@ class ConvolutionalNeuralNetwork:
 def get_lenet_5_pretrained():
     lenet_5_pretrained = ConvolutionalNeuralNetwork(
         [
-            ConvolutionalLayer((1, 32, 32), (6, 28, 28)),   # 0
+            ConvolutionalLayer((1, 32, 32), (6, 28, 28), '../data/kernels_biases/layer_0'),   # 0
             ActivationLayer(tanh, derivative_tanh),
             AveragePoolingLayer(2),
-            ConvolutionalLayer((6, 14, 14), (16, 10, 10)),  # 3
+            ConvolutionalLayer((6, 14, 14), (16, 10, 10), '../data/kernels_biases/layer_3'),  # 3
             ActivationLayer(tanh, derivative_tanh),
             AveragePoolingLayer(2),
-            ConvolutionalLayer((16, 5, 5), (120, 1, 1)),    # 6
+            ConvolutionalLayer((16, 5, 5), (120, 1, 1), '../data/kernels_biases/layer_6'),    # 6
             ActivationLayer(tanh, derivative_tanh),
             ReshapeLayer((120, 1, 1), (120, 1)),
-            DenseLayer(120, 84),                            # 9
+            DenseLayer(120, 84, '../data/weights_biases/layer_9'),                            # 9
             ActivationLayer(tanh, derivative_tanh),
-            DenseLayer(84, 10),                             # 11
+            DenseLayer(84, 10, '../data/weights_biases/layer_11'),                            # 11
             SoftmaxLayer(),
         ],
         num_classes=10
@@ -222,10 +222,10 @@ if __name__ == '__main__':
         num_classes=10
     )
 
-
-    print('mini_batch_size = 32, learning_rate = 0.07')
+    learning_rate = 0.05
+    print(f'mini_batch_size = 32, learning_rate = {learning_rate}')
     start_time = time()
-    lenet_5.fit(epochs=7, mini_batch_size=32, learning_rate=0.07, step=1, decay_rate=0.9)
+    lenet_5.fit(epochs=7, mini_batch_size=32, learning_rate=learning_rate, step=1, decay_rate=0.9)
     lenet_5.errors_accuracies_to_csv()
     lenet_5.trainable_parameters_to_csv()
     end_time = time()
