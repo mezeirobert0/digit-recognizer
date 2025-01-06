@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from layer import Layer
-# from utils import valid_correlation, full_convolution
 from scipy.signal import correlate2d, convolve2d
 
 
@@ -56,7 +55,6 @@ class ConvolutionalLayer(Layer):
         for i in range(self.output_shape[0]):
             sum_correlations = np.zeros(self.output_shape[1:])
             for j in range(self.input_shape[0]):
-                # sum_correlations += valid_correlation(self.input_array[j], self.kernels[i, j])
                 sum_correlations += correlate2d(self.input_array[j], self.kernels[i, j], 'valid')
             
             self.output_array[i] = sum_correlations + self.biases[i]
@@ -73,8 +71,6 @@ class ConvolutionalLayer(Layer):
         input_gradient = np.zeros(self.input_shape)
         for i in range(self.output_shape[0]):
             for j in range(self.input_shape[0]):
-                # kernels_gradient[i, j] = valid_correlation(self.input_array[j], output_gradient[i])
-                # input_gradient[j] += full_convolution(output_gradient[i], self.kernels[i, j])
                 kernels_gradient[i, j] = correlate2d(self.input_array[j], output_gradient[i], 'valid')
                 input_gradient[j] += convolve2d(output_gradient[i], self.kernels[i, j], 'full')
 

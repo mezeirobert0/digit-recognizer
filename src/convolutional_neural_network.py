@@ -1,7 +1,9 @@
 from time import time
 from pathlib import Path
+from wsgiref.types import ErrorStream
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from tqdm import tqdm
 from activation_layer import ActivationLayer
 from average_pooling_layer import AveragePoolingLayer
@@ -33,6 +35,8 @@ class ConvolutionalNeuralNetwork:
         self.num_classes = num_classes
         self.train_errors = np.zeros((1,))
         self.train_accuracies = np.zeros((1,))
+        self.test_errors = np.zeros((1,))
+        self.test_accuracies = np.zeros((1,))
         self.mnist_instance = Mnist()
 
     def fit(self, epochs: int, mini_batch_size: int, learning_rate: float, step: int, decay_rate: float, X_train: np.ndarray = None, y_train: np.ndarray = None):
@@ -178,6 +182,31 @@ class ConvolutionalNeuralNetwork:
 
         return prediction, confidence
     
+    @staticmethod
+    def plot_errors_accuracies():
+        errors_accuracies_df = pd.read_csv('../data/errors_accuracies.csv')
+
+        fig, (ax1, ax2) = plt.subplots(1, 2)
+        fig.suptitle('Errors and accuracies from training & testing datasets')
+
+        ax1.plot(errors_accuracies_df.index, errors_accuracies_df['train_error'], label='Train error', color='blue')
+        ax1.plot(errors_accuracies_df.index, errors_accuracies_df['test_error'], label='Test error', color='red')
+        ax1.set_xlabel('Epoch')
+        ax1.set_ylabel('Error')
+        ax1.legend()
+        ax1.grid(True)
+        ax1.set_yticks(np.arange(0, 0.8, 0.05))
+
+        ax2.plot(errors_accuracies_df.index, errors_accuracies_df['train_accuracy'], label='Train accuracy', color='blue')
+        ax2.plot(errors_accuracies_df.index, errors_accuracies_df['test_accuracy'], label='Test accuracy', color='red')
+        ax2.set_xlabel('Epoch')
+        ax2.set_ylabel('Accuracy')
+        ax2.legend()
+        ax2.grid(True)
+        ax2.set_yticks(np.arange(0.7, 1, 0.05))
+
+        plt.show()
+    
 def get_lenet_5_pretrained():
     lenet_5_pretrained = ConvolutionalNeuralNetwork(
         [
@@ -256,3 +285,5 @@ if __name__ == '__main__':
     # )
 
     # print(lenet_5_pretrained.test_network_async())
+
+    ConvolutionalNeuralNetwork.plot_errors_accuracies()

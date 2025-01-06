@@ -1,7 +1,0 @@
-Train LeNet-5 on MNIST again: 7 epochs, mini-batch size - 32, initial learning rate - 0.05
-Error when testing the training dataset was much higher than the error resulted from testing the validation dataset
-which indicates some degree of overtraining. Now the difference is a lot more subtle,
-indicating a good generalization of the model.
-Passed the trained network with the trained parameters to the service layer, instead of the untrained model
-service.py: change preprocess_mnist_datapoint to self.lenet_5_pretrained.preprocess_mnist_datapoint
-gui.py: change Qt.FastTransformation to Qt.SmoothTransformation when downscaling the drawn image to (28, 28)
